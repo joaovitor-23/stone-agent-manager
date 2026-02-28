@@ -138,6 +138,10 @@
             background: #138496;
         }
 
+        .btn-delete {
+            background: #dc3545;
+        }
+
         /* Modal de edição */
         .modal {
             display: none;
@@ -482,7 +486,7 @@
             </div>
         </div>
 
-        <!-- Linha 4: Últimos Registros (AGORA COM BOTÃO EDITAR) -->
+        <!-- Linha 4: Últimos Registros (AGORA COM EDITAR E EXCLUIR) -->
         <div class="card" style="margin-bottom: 30px;">
             <h2>📋 Últimos Registros</h2>
             <div class="table-container">
@@ -557,8 +561,8 @@
     <script>
         // Chaves do localStorage
         const STORAGE_KEYS = {
-            AGENTS: 'stone_agents_edit',
-            RECORDS: 'stone_records_edit'
+            AGENTS: 'stone_agents_delete',
+            RECORDS: 'stone_records_delete'
         };
 
         // Dados iniciais
@@ -575,7 +579,7 @@
         // CADASTRAR AGENTE
         document.getElementById('agentForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
+            
             const name = document.getElementById('agentName').value.trim();
             const city = document.getElementById('agentCity').value.trim();
 
@@ -617,7 +621,7 @@
             }
 
             const agent = agents.find(a => a.id === agentId);
-
+            
             records.push({
                 id: Date.now().toString(),
                 agentId: agentId,
@@ -638,13 +642,23 @@
 
         // EXCLUIR AGENTE
         window.deleteAgent = function(agentId) {
-            if (confirm('Remover este agente?')) {
+            if (confirm('Remover este agente? Todos os registros dele também serão apagados.')) {
                 agents = agents.filter(a => a.id !== agentId);
                 records = records.filter(r => r.agentId !== agentId);
                 saveAgents();
                 saveRecords();
                 updateAllDisplays();
                 showMessage('Agente removido!', 'success');
+            }
+        };
+
+        // NOVA FUNÇÃO: EXCLUIR REGISTRO INDIVIDUAL
+        window.deleteRecord = function(recordId) {
+            if (confirm('Tem certeza que deseja excluir este registro?')) {
+                records = records.filter(r => r.id !== recordId);
+                saveRecords();
+                updateAllDisplays();
+                showMessage('Registro excluído!', 'success');
             }
         };
 
@@ -670,7 +684,7 @@
 
         // LIMPAR TUDO
         window.clearAllData = function() {
-            if (confirm('⚠️ Apagar TODOS os dados?')) {
+            if (confirm('⚠️ Apagar TODOS os dados? Essa ação não pode ser desfeita.')) {
                 agents = [];
                 records = [];
                 localStorage.removeItem(STORAGE_KEYS.AGENTS);
@@ -680,7 +694,7 @@
             }
         };
 
-        // NOVAS FUNÇÕES: EDITAR REGISTRO
+        // FUNÇÕES DO MODAL DE EDIÇÃO
         window.openEditModal = function(recordId) {
             const record = records.find(r => r.id === recordId);
             if (!record) return;
@@ -759,7 +773,7 @@
         // ATUALIZAR LISTA DE AGENTES
         function updateAgentsList() {
             const container = document.getElementById('agentsList');
-
+            
             if (agents.length === 0) {
                 container.innerHTML = '<div style="text-align: center; padding: 30px; color: #999;">Nenhum agente cadastrado</div>';
                 return;
@@ -809,9 +823,9 @@
         function updateWeeklyTotals() {
             const hoje = new Date();
             const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-
+            
             const registrosMes = records.filter(r => r.month === mesAtual);
-
+            
             const semanas = ['S1', 'S2', 'S3', 'S4'];
             let html = '';
 
@@ -833,10 +847,10 @@
             document.getElementById('weeklyTotals').innerHTML = html;
         }
 
-        // ATUALIZAR ÚLTIMOS REGISTROS (AGORA COM BOTÃO EDITAR)
+        // ATUALIZAR ÚLTIMOS REGISTROS (AGORA COM EDITAR E EXCLUIR)
         function updateRecordsList() {
             const tbody = document.getElementById('recordsList');
-
+            
             if (records.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum registro</td></tr>';
                 return;
@@ -854,6 +868,7 @@
                     <td>
                         <div class="actions-cell">
                             <button class="btn btn-sm btn-edit" onclick="openEditModal('${r.id}')">✏️ Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRecord('${r.id}')">🗑️ Excluir</button>
                         </div>
                     </td>
                 </tr>
@@ -863,7 +878,7 @@
         // ATUALIZAR RESUMO POR AGENTE
         function updateAgentsResumo() {
             const container = document.getElementById('agentsResumo');
-
+            
             if (agents.length === 0) {
                 container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center;">Nenhum agente cadastrado</div>';
                 return;
@@ -877,13 +892,13 @@
                 const totalClients = agentRecords.reduce((s, r) => s + r.newClients, 0);
                 const totalTPV = agentRecords.reduce((s, r) => s + r.tpv, 0);
                 const mesRecords = agentRecords.filter(r => r.month === mesAtual);
-
+                
                 const semanas = ['S1', 'S2', 'S3', 'S4'];
                 const semanasHTML = semanas.map(semana => {
                     const semanaRecords = mesRecords.filter(r => r.week === semana);
                     const clientes = semanaRecords.reduce((s, r) => s + r.newClients, 0);
                     const tpv = semanaRecords.reduce((s, r) => s + r.tpv, 0);
-
+                    
                     return `
                         <div class="semana-card">
                             <div class="semana">${semana}</div>
@@ -899,7 +914,7 @@
                             <h3>${agent.name}</h3>
                             <span class="cidade">${agent.city}</span>
                         </div>
-
+                        
                         <div class="resumo-totais">
                             <div class="resumo-item">
                                 <div class="valor">${totalClients}</div>
