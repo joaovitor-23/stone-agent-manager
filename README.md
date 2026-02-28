@@ -25,12 +25,5 @@ Uma ferramenta web leve e intuitiva para automatizar o controle diário de perfo
 4.  **Lance os Dados:** No formulário de "Registro Diário", selecione o agente, a semana correspondente e os valores.
 5.  **Acompanhe o Resumo:** Os cards inferiores atualizarão automaticamente com o desempenho total e mensal.
 
-## 📌 Próximas Melhorias (Backlog)
-
-- [ ] Automação da seleção de semana com base na data do calendário.
-- [ ] Integração com Google Sheets API para backup em nuvem.
-- [ ] Gráficos de linha para visualização de tendência de TPV.
-- [ ] Filtro de busca para gestão de grandes listas de agentes.
-
 ---
 *Desenvolvido para otimizar fluxos de trabalho manuais e focar no que importa: resultados.*
